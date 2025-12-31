@@ -1,0 +1,42 @@
+name: Museum
+version: '1.0-SNAPSHOT'
+main: me.andrei9876.museum.Museum
+api-version: '1.20'
+depend:
+  - PlaceholderAPI
+commands:
+  mymuseum:
+    description: Teleport to your museum
+    usage: /mymuseum
+    permission: museum.tp
+  museumvisit:
+    description: Visit a museum
+    usage: /museumvisit <playerName>
+    permission: museum.visit
+  museumadd:
+    description: Idk
+    usage: /museumadd <playerName>
+    permission: museum.add
+  museumrem:
+    description: Idk
+    usage: /museumrem <playerName>
+    permission: museum.rem
+  museumdebug:
+    description: Idk
+    usage: /museumdebug
+    permission: museum.debug
+permissions:
+  museum.bypass:
+    default: op
+  museum.add:
+    default: op
+  museum.debug:
+    default: op
+  museum.rem:
+    default: op
+  museum.tp:
+    description: Allows teleporting to your museum
+    default: true
+  museum.visit:
+    description: Allows players to visit a museum
+    default: true

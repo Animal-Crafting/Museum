@@ -1,0 +1,42 @@
+default_world: "Museums"
+schematic_name: "museumschem" # LOWERCASE ONLY
+distance_between: 48                 # grid spacing (blocks)
+debug: true
+
+creatures:
+  Bugs:
+    - AnimalBugAntBlackArcher
+  Fish:
+    - AnimalWaterSunfish
+
+
+# Spawn offset applied to each museum CENTER to produce a consistent player spawn.
+# Example below yields: center (-23999116, -41, 7129248) -> spawn (-23999125.531, -55.9375, 7129287.519)
+offsets:
+  player_spawn:
+    x: -9.531
+    y: -14.9375
+    z: 39.519
+    commands: {}
+
+  Bugs:
+    x: -77
+    y: -22
+    z: -12
+    commands: {}
+
+  Fish:
+    x: 79
+    y: -20
+    z: -18
+    commands: {}
+
+  NPC:
+    x: -12.485
+    y: -14.5
+    z: 36.5
+    commands:
+      - "mm m spawn NPC_Morith 1 %world%,%x%,%y%,%z%"
+
+
+museums: {}   # will be filled automatically
