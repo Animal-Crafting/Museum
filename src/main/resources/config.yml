@@ -31,6 +31,115 @@ offsets:
     z: -18
     commands: {}
 
+  Fossils:
+    Diplodocus:
+      x: -6.5
+      y: -18.0
+      z: 14.5
+      armorStand: false
+      commands:
+        - "mm m spawn Diplodocus 1 %world%,%x%,%y%,%z%"
+
+    Trex:
+      x: -6.5
+      y: -17.0
+      z: -5.5
+      armorStand: false
+      commands:
+        - "mm m spawn Trex 1 %world%,%x%,%y%,%z%"
+
+    Brachiosaurus:
+      x: -6.5
+      y: -17.0
+      z: -22.5
+      armorStand: false
+      commands:
+        - "mm m spawn Brachiosaurus 1 %world%,%x%,%y%,%z%"
+
+    Triceratops:
+      x: -29.5
+      y: -18.0
+      z: 19.5
+      armorStand: false
+      commands:
+        - "mm m spawn Triceratops 1 %world%,%x%,%y%,%z%"
+
+    Mammoth:
+      x: 16.5
+      y: -18.0
+      z: 19.5
+      armorStand: false
+      commands:
+        - "mm m spawn Mammoth 1 %world%,%x%,%y%,%z%"
+
+    SabertoothTiger:
+      x: 6.5
+      y: -19.0
+      z: 20.0
+      armorStand: false
+      commands:
+        - "mm m spawn SabertoothTiger 1 %world%,%x%,%y%,%z%"
+
+    Ankylosaurus:
+      x: -19.5
+      y: -19.0
+      z: 20.0
+      armorStand: false
+      commands:
+        - "mm m spawn Ankylosaurus 1 %world%,%x%,%y%,%z%"
+
+    Megaloceros:
+      x: -19.5
+      y: -19.0
+      z: 11.0
+      armorStand: false
+      commands:
+        - "mm m spawn Megaloceros 1 %world%,%x%,%y%,%z%"
+
+    Pteranodon:
+      x: 6.5
+      y: -19.0
+      z: 11.0
+      armorStand: false
+      commands:
+        - "mm m spawn Pteranodon 1 %world%,%x%,%y%,%z%"
+
+    Stegasaurus:
+      x: -19.5
+      y: -19.0
+      z: -10.0
+      armorStand: false
+      commands:
+        - "mm m spawn Stegasaurus 1 %world%,%x%,%y%,%z%"
+
+    Pteranodon2:
+      x: 6.5
+      y: -19.0
+      z: -10.0
+      armorStand: false
+      commands:
+        - "mm m spawn Pteranodon2 1 %world%,%x%,%y%,%z%"
+
+    Archaeopteryx:
+      x: 4.5
+      y: -20.0
+      z: 24.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10933
+
+    Acanthostega:
+      x: -17.5
+      y: -20.0
+      z: 24.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10926
+
   NPC:
     x: -12.485
     y: -14.5
@@ -38,5 +147,46 @@ offsets:
     commands:
       - "mm m spawn NPC_Morith 1 %world%,%x%,%y%,%z%"
 
+  doors:
+    door1_enter:
+      x: 10
+      y: -20
+      z: 5
+      radius: 1.2
+      cooldown_ticks: 20
 
-museums: {}   # will be filled automatically
+      teleport:
+        relative_to_spawn: true
+        world: "Museums"
+        x: 0
+        y: 0
+        z: 0
+        yaw: 0
+        pitch: 0
+
+      commands:
+        - "effect give %player% minecraft:blindness 1 1 true"
+        - "say Teleported to %world% %x% %y% %z%"
+
+    door1_exit:
+      x: 12
+      y: -20
+      z: 5
+      radius: 1.2
+      cooldown_ticks: 20
+
+      teleport:
+        world: "Museums"
+        x: -23999000
+        y: -56
+        z: 7129200
+        yaw: 180
+        pitch: 0
+  holograms:
+    h1:
+      x: 0
+      y: -20
+      z: 0
+      lines:
+        - "&aBugs Museum"
+        - "&7Click to open"

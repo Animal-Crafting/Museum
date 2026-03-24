@@ -2,6 +2,7 @@ package me.andrei9876.museum;
 
 import me.andrei9876.museum.cmds.*;
 import me.andrei9876.museum.listeners.MuseumCreationListener;
+import me.andrei9876.museum.listeners.MuseumDoorListener;
 import me.andrei9876.museum.listeners.MuseumProtectionListener;
 import me.andrei9876.museum.managers.MuseumsCreatures;
 import me.andrei9876.museum.managers.MuseumsManager;
@@ -26,6 +27,7 @@ public final class Museum extends JavaPlugin {
         museumsCreatures = new MuseumsCreatures(this);
         Bukkit.getPluginManager().registerEvents(new MuseumProtectionListener(this), this);
         Bukkit.getPluginManager().registerEvents(new MuseumCreationListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new MuseumDoorListener(this), this);
 
 
         getCommand("mymuseum").setExecutor(new MyMuseumCommand(this));
@@ -33,6 +35,7 @@ public final class Museum extends JavaPlugin {
         getCommand("museumadd").setExecutor(new MuseumAdd(this));
         getCommand("museumrem").setExecutor(new MuseumRem(this));
         getCommand("museumdebug").setExecutor(new DebugMuseum(this));
+        getCommand("museumpos").setExecutor(new MuseumPos(this));
 
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
             new PlaceholderExp(this).register();
