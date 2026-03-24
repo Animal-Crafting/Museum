@@ -1,6 +1,7 @@
 default_world: "Museums"
 schematic_name: "museumschem" # LOWERCASE ONLY
 distance_between: 48                 # grid spacing (blocks)
+museum_center_y: 87
 debug: true
 
 creatures:

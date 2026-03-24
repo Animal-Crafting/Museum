@@ -38,6 +38,8 @@ public class MuseumsManager {
     private String schematicName;
     /** Extra gap between museums; real spacing = schematic size + this */
     private int distanceBetween;
+    /** Fixed museum center Y for void/custom worlds */
+    private int museumCenterY;
     /** Player spawn offset (from center) */
     private Vector spawnOffset = new Vector(0, 0, 0);
 
@@ -94,11 +96,13 @@ public class MuseumsManager {
 
         schematicName = plugin.getConfig().getString("schematic_name");
         distanceBetween = plugin.getConfig().getInt("distance_between", 48);
+        museumCenterY = plugin.getConfig().getInt("museum_center_y", 87);
 
         dbg(
-                "Config loaded: schematic_name=%s, distance_between=%d, spawnOffset=(%.3f,%.3f,%.3f), namedOffsets=%d",
+                "Config loaded: schematic_name=%s, distance_between=%d, museumCenterY=%d, spawnOffset=(%.3f,%.3f,%.3f), namedOffsets=%d",
                 schematicName,
                 distanceBetween,
+                museumCenterY,
                 spawnOffset.getX(),
                 spawnOffset.getY(),
                 spawnOffset.getZ(),
@@ -364,6 +368,9 @@ public class MuseumsManager {
 
             } catch (Throwable t) {
                 log.log(Level.SEVERE, "[Museums] Async paste failed", t);
+                if (onDone != null) {
+                    Bukkit.getScheduler().runTask(plugin, onDone);
+                }
             }
         });
     }
@@ -749,22 +756,19 @@ public class MuseumsManager {
         return (max.z() - min.z() + 1);
     }
 
-    /** First museum centered near (0,0), Y adapted to terrain. */
-    private Location firstCenterForClipboard(Clipboard cp, World w) {
-        int x = 0, z = 0;
-        int groundY = w.getHighestBlockYAt(x, z);
-        BlockVector3 regMin = cp.getRegion().getMinimumPoint();
-        BlockVector3 regMax = cp.getRegion().getMaximumPoint();
-        BlockVector3 clipCenter = BlockVector3.at(
-                (regMin.x() + regMax.x()) / 2,
-                (regMin.y() + regMax.y()) / 2,
-                (regMin.z() + regMax.z()) / 2
-        );
-        int centerY = groundY - regMin.y() + clipCenter.y();
-        return new Location(w, x + 0.5, centerY, z + 0.5);
+    private int clampMuseumY(World w, int y) {
+        int min = w.getMinHeight();
+        int max = w.getMaxHeight() - 1;
+        return Math.max(min, Math.min(max, y));
     }
 
-    /** Square-spiral grid around spawn. Index 0 at (0,0). */
+    /** First museum centered near (0,0), using fixed Y from config. */
+    private Location firstCenterForClipboard(Clipboard cp, World w) {
+        int x = 0, z = 0;
+        return new Location(w, x + 0.5, clampMuseumY(w, museumCenterY), z + 0.5);
+    }
+
+    /** Square-spiral grid around spawn. Index 0 at (0,0). Uses fixed Y from config. */
     private Location gridCenterForIndex(Clipboard cp, World w, int index, int spacingX, int spacingZ) {
         if (index <= 0) return firstCenterForClipboard(cp, w);
 
@@ -792,16 +796,7 @@ public class MuseumsManager {
         int x = kx * spacingX;
         int z = kz * spacingZ;
 
-        int groundY = w.getHighestBlockYAt(x, z);
-        BlockVector3 regMin = cp.getRegion().getMinimumPoint();
-        BlockVector3 regMax = cp.getRegion().getMaximumPoint();
-        BlockVector3 clipCenter = BlockVector3.at(
-                (regMin.x() + regMax.x()) / 2,
-                (regMin.y() + regMax.y()) / 2,
-                (regMin.z() + regMax.z()) / 2
-        );
-        int centerY = groundY - regMin.y() + clipCenter.y();
-        return new Location(w, x + 0.5, centerY, z + 0.5);
+        return new Location(w, x + 0.5, clampMuseumY(w, museumCenterY), z + 0.5);
     }
 
     /* ==================== COMMAND EXPANSION ==================== */
@@ -948,42 +943,45 @@ public class MuseumsManager {
         preloadChunksAround(center, 2);
 
         pasteClipboardCenteredAsync(clipboard, center, true, () -> {
-            try {
-                MuseumRegion region = computePastedMuseum(playerID, clipboard, center);
+            MuseumRegion region = computePastedMuseum(playerID, clipboard, center);
 
-                if (!verifyMuseumAtLocation(region)) {
-                    dbg("Verification failed at %s, retrying paste", loc(center));
+            if (!verifyMuseumAtLocation(region)) {
+                dbg("Verification failed at %s, retrying paste", loc(center));
 
-                    pasteClipboardCenteredAsync(clipboard, center, true, () -> {
-                        try {
-                            MuseumRegion retry = computePastedMuseum(playerID, clipboard, center);
+                pasteClipboardCenteredAsync(clipboard, center, true, () -> {
+                    try {
+                        MuseumRegion retry = computePastedMuseum(playerID, clipboard, center);
 
-                            if (!verifyMuseumAtLocation(retry)) {
-                                log.severe("[Museums] Retry paste FAILED at " + loc(center));
-                                return;
-                            }
-
-                            putMuseum(playerID, retry);
-                            refreshLightingForRegion(retry);
-                            runNamedOffsetCommands(center);
-                            spawnMuseumHolograms(playerID, center);
-
-                            dbg("Retry SUCCESS for %s", playerID);
-                        } finally {
-                            clearPending(playerID);
+                        if (!verifyMuseumAtLocation(retry)) {
+                            log.severe("[Museums] Retry paste FAILED at " + loc(center));
+                            return;
                         }
-                    });
 
-                    return;
-                }
+                        putMuseum(playerID, retry);
+                        refreshLightingForRegion(retry);
+                        runNamedOffsetCommands(center);
+                        spawnMuseumHolograms(playerID, center);
 
+                        dbg("Retry SUCCESS for %s", playerID);
+                    } catch (Throwable t) {
+                        log.log(Level.SEVERE, "[Museums] Retry create failed for " + playerID, t);
+                    } finally {
+                        clearPending(playerID);
+                    }
+                });
+
+                return;
+            }
+
+            try {
                 putMuseum(playerID, region);
                 refreshLightingForRegion(region);
                 runNamedOffsetCommands(center);
                 spawnMuseumHolograms(playerID, center);
 
                 dbg("Museum created for %s at %s", playerID, loc(center));
-
+            } catch (Throwable t) {
+                log.log(Level.SEVERE, "[Museums] Create failed for " + playerID, t);
             } finally {
                 clearPending(playerID);
             }
@@ -993,7 +991,9 @@ public class MuseumsManager {
     }
 
     public Location resolveDoorTeleport(MuseumRegion region, DoorSpec door) {
-        if (region == null || door == null || door.target() == null) return null;
+        if (region == null || door == null || door.target() == null) {
+            return null;
+        }
 
         TeleportTarget t = door.target();
 
@@ -1001,36 +1001,24 @@ public class MuseumsManager {
                 ? Bukkit.getWorld(t.world())
                 : Bukkit.getWorld(region.getWorldName());
 
-        if (targetWorld == null) return null;
+        if (targetWorld == null) {
+            return null;
+        }
 
         Location out;
 
-        // offset relativ la spawn-ul muzeului
+        // relative to the museum's logical center, not an absolute point
         if (t.relativeToSpawn()) {
-            Location spawn = region.getSpawnLocation();
-            if (spawn == null) return null;
-
-            out = spawn.clone();
-
-            if (out.getWorld() == null || !out.getWorld().getName().equals(targetWorld.getName())) {
-                out.setWorld(targetWorld);
-            }
-
-            out.add(t.x(), t.y(), t.z());
-        }
-        // offset relativ la centrul muzeului
-        else if (t.relative()) {
-            BlockVector3 center = region.getCenter();
+            BlockVector3 museumCenter = region.getCenter();
 
             out = new Location(
                     targetWorld,
-                    center.x() + 0.5 + t.x(),
-                    center.y() + t.y(),
-                    center.z() + 0.5 + t.z()
+                    museumCenter.x() + 0.5 + t.x(),
+                    museumCenter.y() + t.y(),
+                    museumCenter.z() + 0.5 + t.z()
             );
-        }
-        // coordonate absolute
-        else {
+        } else {
+            // absolute coordinates
             out = new Location(
                     targetWorld,
                     t.x(),
@@ -1039,8 +1027,13 @@ public class MuseumsManager {
             );
         }
 
-        if (t.yaw() != null) out.setYaw(t.yaw());
-        if (t.pitch() != null) out.setPitch(t.pitch());
+        if (t.yaw() != null) {
+            out.setYaw(t.yaw());
+        }
+
+        if (t.pitch() != null) {
+            out.setPitch(t.pitch());
+        }
 
         return out;
     }

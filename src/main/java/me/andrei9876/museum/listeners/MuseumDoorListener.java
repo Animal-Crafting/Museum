@@ -116,21 +116,7 @@ public class MuseumDoorListener implements Listener {
             return;
         }
 
-        dest.getChunk().load(true);
-
-        plugin.getLogger().info("[Museums] Door '" + door.key() + "' for " + p.getName()
-                + " -> world=" + dest.getWorld().getName()
-                + " x=" + dest.getX()
-                + " y=" + dest.getY()
-                + " z=" + dest.getZ()
-                + " yaw=" + dest.getYaw()
-                + " pitch=" + dest.getPitch());
-
-        if (!p.teleport(dest)) {
-            plugin.getLogger().warning("[Museums] Door '" + door.key() + "' teleport failed for " + p.getName());
-            return;
-        }
-
+        // 1) execută comenzile imediat
         if (door.commands() != null && !door.commands().isEmpty()) {
             for (String raw : door.commands()) {
                 if (raw == null || raw.isBlank()) continue;
@@ -138,5 +124,23 @@ public class MuseumDoorListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
             }
         }
+
+        // 2) după 10 tick-uri, încarcă chunk-ul și teleportează
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!p.isOnline()) {
+                return;
+            }
+
+            if (dest.getWorld() == null) {
+                plugin.getLogger().warning("[Museums] Door '" + door.key() + "' destination world became null.");
+                return;
+            }
+
+            dest.getChunk().load(true);
+
+            if (!p.teleport(dest)) {
+                plugin.getLogger().warning("[Museums] Door '" + door.key() + "' teleport failed for " + p.getName());
+            }
+        }, 10L);
     }
 }
