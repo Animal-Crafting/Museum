@@ -32,7 +32,6 @@ public class MuseumsManager {
     private final boolean debug;
 
     public final Map<UUID, MuseumRegion> museums = new HashMap<>();
-    private final Map<UUID, Location> pendingMuseums = new HashMap<>();
 
     private World world;
     private String schematicName;
@@ -923,7 +922,7 @@ public class MuseumsManager {
     /* ==================== CREATE ==================== */
 
     public boolean createMuseum(UUID playerID) {
-        if (getMuseum(playerID) != null || isPending(playerID)) {
+        if (getMuseum(playerID) != null) {
             return false;
         }
 
@@ -939,41 +938,17 @@ public class MuseumsManager {
         int index = museums.size();
         Location center = gridCenterForIndex(clipboard, world, index, spacingX, spacingZ);
 
-        reservePending(playerID, center);
         preloadChunksAround(center, 2);
 
         pasteClipboardCenteredAsync(clipboard, center, true, () -> {
-            MuseumRegion region = computePastedMuseum(playerID, clipboard, center);
-
-            if (!verifyMuseumAtLocation(region)) {
-                dbg("Verification failed at %s, retrying paste", loc(center));
-
-                pasteClipboardCenteredAsync(clipboard, center, true, () -> {
-                    try {
-                        MuseumRegion retry = computePastedMuseum(playerID, clipboard, center);
-
-                        if (!verifyMuseumAtLocation(retry)) {
-                            log.severe("[Museums] Retry paste FAILED at " + loc(center));
-                            return;
-                        }
-
-                        putMuseum(playerID, retry);
-                        refreshLightingForRegion(retry);
-                        runNamedOffsetCommands(center);
-                        spawnMuseumHolograms(playerID, center);
-
-                        dbg("Retry SUCCESS for %s", playerID);
-                    } catch (Throwable t) {
-                        log.log(Level.SEVERE, "[Museums] Retry create failed for " + playerID, t);
-                    } finally {
-                        clearPending(playerID);
-                    }
-                });
-
-                return;
-            }
-
             try {
+                MuseumRegion region = computePastedMuseum(playerID, clipboard, center);
+
+                if (!verifyMuseumAtLocation(region)) {
+                    log.severe("[Museums] Paste verification failed at " + loc(center));
+                    return;
+                }
+
                 putMuseum(playerID, region);
                 refreshLightingForRegion(region);
                 runNamedOffsetCommands(center);
@@ -982,8 +957,6 @@ public class MuseumsManager {
                 dbg("Museum created for %s at %s", playerID, loc(center));
             } catch (Throwable t) {
                 log.log(Level.SEVERE, "[Museums] Create failed for " + playerID, t);
-            } finally {
-                clearPending(playerID);
             }
         });
 
@@ -1036,24 +1009,6 @@ public class MuseumsManager {
         }
 
         return out;
-    }
-
-    private void reservePending(UUID playerID, Location center) {
-        synchronized (pendingMuseums) {
-            pendingMuseums.put(playerID, center);
-        }
-    }
-
-    private void clearPending(UUID playerID) {
-        synchronized (pendingMuseums) {
-            pendingMuseums.remove(playerID);
-        }
-    }
-
-    public boolean isPending(UUID playerID) {
-        synchronized (pendingMuseums) {
-            return pendingMuseums.containsKey(playerID);
-        }
     }
 
     /* ==================== PRETTY ==================== */

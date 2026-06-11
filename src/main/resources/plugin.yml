@@ -1,7 +1,7 @@
 name: Museum
 version: '1.0-SNAPSHOT'
 main: me.andrei9876.museum.Museum
-api-version: '1.20'
+api-version: '1.21'
 depend:
   - PlaceholderAPI
   - DecentHolograms
@@ -30,6 +30,10 @@ commands:
     description: Show your position relative to your museum center
     usage: /museumpos
     permission: museum.pos
+  museumfishdebug:
+    description: Respawn only Fish mobs for a specific player's museum
+    usage: /museumfishdebug <playerName|uuid>
+    permission: museum.fishdebug
 permissions:
   museum.bypass:
     default: op
@@ -48,3 +52,5 @@ permissions:
   museum.pos:
     description: Allows showing position relative to museum center
     default: true
+  museum.fishdebug:
+    default: op

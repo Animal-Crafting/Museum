@@ -27,7 +27,7 @@ public class MuseumAdd implements CommandExecutor {
         }
 
         if(args.length < 2){
-            sender.sendMessage("Invalid ussage use /museumadd <playerName> <creature>");
+            sender.sendMessage("Invalid ussage use /museumadd <playerName> <creature> [head|body|tail]");
             return true;
         }
 
@@ -40,7 +40,12 @@ public class MuseumAdd implements CommandExecutor {
             return true;
         }
 
-        boolean result = plugin.getMuseumsCreatures().addCreature(id, args[1]);
+        String part = null;
+        if (args.length >= 3) {
+            part = args[2];
+        }
+
+        boolean result = plugin.getMuseumsCreatures().addCreature(id, args[1], part);
         if(!result){
             sender.sendMessage(ChatColor.RED + "A problem has been found in trying to add a creature!");
         }

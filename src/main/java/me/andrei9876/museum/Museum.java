@@ -36,6 +36,8 @@ public final class Museum extends JavaPlugin {
         getCommand("museumrem").setExecutor(new MuseumRem(this));
         getCommand("museumdebug").setExecutor(new DebugMuseum(this));
         getCommand("museumpos").setExecutor(new MuseumPos(this));
+        getCommand("museumfishdebug").setExecutor(new MuseumFishDebug(this));
+
 
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
             new PlaceholderExp(this).register();

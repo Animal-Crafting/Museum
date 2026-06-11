@@ -22,6 +22,9 @@ public class MuseumsCreatures {
     private final Map<String, List<String>> creaturesByCategory = new HashMap<>();
     private final Set<String> allCreatures = new HashSet<>();
 
+    private static final String CAT_FOSSILS = "Fossils";
+    private static final Set<String> MULTIPART_PARTS = Set.of("head", "body", "tail");
+
     public MuseumsCreatures(Museum plugin) {
         this.plugin = plugin;
         loadFromConfig();
@@ -63,17 +66,24 @@ public class MuseumsCreatures {
     }
 
     // =========================
-    // PUBLIC API
+    // DEBUG
     // =========================
 
     private void debug(String msg) {
         plugin.getLogger().log(Level.INFO, "[MuseumsCreatures][DEBUG] " + msg);
     }
 
+    // =========================
+    // PUBLIC API
+    // =========================
 
     public boolean addCreature(UUID playerID, String creatureId) {
+        return addCreature(playerID, creatureId, null);
+    }
 
-        debug("addCreature called: player=" + playerID + ", creatureId=" + creatureId);
+    public boolean addCreature(UUID playerID, String creatureId, String rawPart) {
+
+        debug("addCreature called: player=" + playerID + ", creatureId=" + creatureId + ", part=" + rawPart);
 
         MuseumRegion region = plugin.getMuseumsManager().getMuseum(playerID);
         if (region == null) {
@@ -82,8 +92,7 @@ public class MuseumsCreatures {
         }
         debug("✔ MuseumRegion found");
 
-        boolean isFossil =
-                plugin.getConfig().contains("offsets.Fossils." + creatureId);
+        boolean isFossil = plugin.getConfig().contains("offsets.Fossils." + creatureId);
         debug("isFossil=" + isFossil);
 
         cVal val = get(creatureId);
@@ -91,7 +100,7 @@ public class MuseumsCreatures {
 
         if (val == null && isFossil) {
             debug("Creature not registered but fossil exists → creating Fossils cVal");
-            val = new cVal("Fossils", creatureId);
+            val = new cVal(CAT_FOSSILS, creatureId);
         }
 
         if (val == null) {
@@ -99,24 +108,74 @@ public class MuseumsCreatures {
             return false;
         }
 
-        // Already added?
-        for (Map.Entry<String, List<String>> entry : region.getAvailableByCategory().entrySet()) {
-            for (String s : entry.getValue()) {
-                if (s.equalsIgnoreCase(val.value)) {
-                    debug("❌ Creature already added in category " + entry.getKey());
+        // =========================
+        // FOSSILS (multipart if armorStand:false)
+        // =========================
+        if (val.category.equalsIgnoreCase(CAT_FOSSILS)) {
+            ConfigurationSection fossilSec =
+                    plugin.getConfig().getConfigurationSection("offsets.Fossils." + creatureId);
+            if (fossilSec == null) {
+                debug("❌ Fossil section missing: offsets.Fossils." + creatureId);
+                return false;
+            }
+
+            boolean armorStand = fossilSec.getBoolean("armorStand", false);
+            boolean multipart = !armorStand; // doar unde armorStand:false
+
+            String part = normalizePart(rawPart);
+
+            // Multipart fossil
+            if (multipart) {
+                if (part == null) {
+                    debug("❌ Multipart fossil requires a part: head/body/tail");
                     return false;
                 }
+
+                if (hasExact(region, CAT_FOSSILS, creatureId)) {
+                    debug("❌ Fossil already completed: " + creatureId);
+                    return false;
+                }
+
+                String token = fossilPieceToken(creatureId, part);
+
+                if (hasExact(region, CAT_FOSSILS, token)) {
+                    debug("❌ Piece already added: " + token);
+                    return false;
+                }
+
+                region.addValue(CAT_FOSSILS, token);
+                plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
+                debug("✔ Piece saved: " + token);
+
+                boolean complete =
+                        hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "head")) &&
+                                hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "body")) &&
+                                hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "tail"));
+
+                if (!complete) {
+                    debug("ℹ Not complete yet, skipping spawn for " + creatureId);
+                    return true;
+                }
+
+                debug("✔ All pieces collected → spawning fossil " + creatureId);
+                if (!spawnFossil(region, creatureId)) {
+                    debug("❌ spawnFossil() returned false");
+                    return false;
+                }
+
+                region.addValue(CAT_FOSSILS, creatureId);
+                plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
+                debug("✔ Fossil spawned & marked completed: " + creatureId);
+                return true;
             }
-        }
-        debug("✔ Creature not already added");
 
-        // =========================
-        // FOSSILS
-        // =========================
-        if (val.category.equalsIgnoreCase("Fossils")) {
+            // Non-multipart fossil
+            if (hasExact(region, CAT_FOSSILS, val.value)) {
+                debug("❌ Fossil already added: " + val.value);
+                return false;
+            }
 
-            debug("Handling fossil spawn");
-
+            debug("Handling fossil spawn (non-multipart)");
             if (!spawnFossil(region, creatureId)) {
                 debug("❌ spawnFossil() returned false");
                 return false;
@@ -132,6 +191,17 @@ public class MuseumsCreatures {
         // =========================
         // NORMAL CREATURES
         // =========================
+
+        for (Map.Entry<String, List<String>> entry : region.getAvailableByCategory().entrySet()) {
+            for (String s : entry.getValue()) {
+                if (s.equalsIgnoreCase(val.value)) {
+                    debug("❌ Creature already added in category " + entry.getKey());
+                    return false;
+                }
+            }
+        }
+        debug("✔ Creature not already added");
+
         Vector point = region.getPoint(val.category);
         if (point == null) {
             debug("❌ No spawn point for category: " + val.category);
@@ -156,7 +226,6 @@ public class MuseumsCreatures {
         return true;
     }
 
-
     public boolean remCreature(UUID playerID, String creatureId) {
 
         MuseumRegion region = plugin.getMuseumsManager().getMuseum(playerID);
@@ -175,12 +244,29 @@ public class MuseumsCreatures {
 
         cVal val = get(creatureId);
         if (val == null) {
-            val = new cVal("Fossils", creatureId);
+            val = new cVal(CAT_FOSSILS, creatureId);
         }
 
         region.removeValue(val.category, val.value);
         plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
         return true;
+    }
+
+    private static String normalizePart(String rawPart) {
+        if (rawPart == null) return null;
+        String p = rawPart.trim().toLowerCase(Locale.ROOT);
+        if (p.endsWith(";")) p = p.substring(0, p.length() - 1).trim();
+        if (p.isEmpty()) return null;
+        return MULTIPART_PARTS.contains(p) ? p : null;
+    }
+
+    private static String fossilPieceToken(String fossilId, String part) {
+        return fossilId + "@" + part;
+    }
+
+    private static boolean hasExact(MuseumRegion region, String category, String value) {
+        List<String> vals = region.getValue(category);
+        return vals != null && vals.contains(value);
     }
 
     // =========================
@@ -200,7 +286,7 @@ public class MuseumsCreatures {
         }
 
         // Base position: Fossils offset or museum center
-        Vector base = region.getPoint("Fossils");
+        Vector base = region.getPoint(CAT_FOSSILS);
         if (base == null) {
             com.sk89q.worldedit.math.BlockVector3 center = region.getCenter();
             base = new Vector(center.x(), center.y(), center.z());
@@ -215,7 +301,6 @@ public class MuseumsCreatures {
         float yaw = (float) fossil.getDouble("yaw", 0.0);
         float pitch = (float) fossil.getDouble("pitch", 0.0);
 
-        // Commands (optional)
         for (String cmd : fossil.getStringList("commands")) {
             Bukkit.dispatchCommand(
                     Bukkit.getConsoleSender(),
@@ -228,7 +313,6 @@ public class MuseumsCreatures {
             );
         }
 
-        // ArmorStand disabled → done
         if (!fossil.getBoolean("armorStand", false)) {
             return true;
         }
@@ -246,8 +330,6 @@ public class MuseumsCreatures {
         spawnArmorStandItem(region.getWorldName(), spawn, material, modelData, yaw, pitch);
         return true;
     }
-
-
 
     private void spawnArmorStandItem(
             String worldName,
@@ -285,9 +367,10 @@ public class MuseumsCreatures {
             item.setItemMeta(meta);
         }
 
-        stand.getEquipment().setHelmet(item);
+        if (stand.getEquipment() != null) {
+            stand.getEquipment().setHelmet(item);
+        }
     }
-
 
     // =========================
     // UTILS

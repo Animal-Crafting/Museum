@@ -186,4 +186,43 @@ public class MuseumRegion {
         List<String> list = availableByCategory.get(category);
         return list == null ? null : Collections.unmodifiableList(list);
     }
+
+    /**
+     * Counts unique donations stored in the museum.
+     * Multipart fossil pieces count individually until the fossil is completed.
+     */
+    public int getDonationCount() {
+        int count = 0;
+        Set<String> completedFossils = new HashSet<>();
+
+        List<String> fossils = availableByCategory.get("Fossils");
+        if (fossils != null) {
+            for (String v : fossils) {
+                if (v != null && !v.contains("@")) {
+                    completedFossils.add(v);
+                }
+            }
+        }
+
+        for (Map.Entry<String, List<String>> e : availableByCategory.entrySet()) {
+            List<String> vals = e.getValue();
+            if (vals == null) continue;
+
+            boolean fossilsCategory = "Fossils".equalsIgnoreCase(e.getKey());
+            for (String v : vals) {
+                if (v == null || v.isBlank()) continue;
+
+                if (fossilsCategory && v.contains("@")) {
+                    String fossilId = v.substring(0, v.indexOf('@'));
+                    if (!completedFossils.contains(fossilId)) {
+                        count++;
+                    }
+                } else {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
 }

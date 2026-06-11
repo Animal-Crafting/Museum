@@ -3,7 +3,6 @@ package me.andrei9876.museum.utils;
 import me.andrei9876.museum.Museum;
 import me.andrei9876.museum.models.MuseumRegion;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,33 +39,72 @@ public class PlaceholderExp extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
+        if (player == null) return "false";
+
+        String p = params.trim();
+
+        // 1) întâi: muzeul lui (owner)
         MuseumRegion region = plugin.getMuseumsManager().getMuseum(player.getUniqueId());
-        if (region == null) return "false";
 
-        Map<String, List<String>> byCat = region.getAvailableByCategory();
-        if (byCat == null || byCat.isEmpty()) return "false";
-
-        // %placeholder% with params = "list:<category>"  -> returns comma-separated values for that category
-        if (params.startsWith("list:")) {
-            String cat = params.substring("list:".length());
-            List<String> vals = byCat.getOrDefault(cat, Collections.emptyList());
-            return vals.isEmpty() ? "" : String.join(",", vals);
+        // 2) dacă nu e owner, dar e în vizită în alt muzeu: ia muzeul după locație
+        if (region == null) {
+            region = plugin.getMuseumsManager()
+                    .findByLocation(player.getLocation())
+                    .orElse(null);
         }
 
-        // %placeholder% with params = "has_in:<category>:<value>" -> true/false
-        if (params.startsWith("has_in:")) {
-            String[] parts = params.split(":", 3);
-            if (parts.length == 3) {
-                List<String> vals = byCat.get(parts[1]);
-                return String.valueOf(vals != null && vals.contains(parts[2]));
+        if (region == null) {
+            if (p.equalsIgnoreCase("donations") || p.equalsIgnoreCase("donation_count")) {
+                return "0";
             }
             return "false";
         }
 
-        // Default: params este valoarea căutată în ORICE categorie -> true/false
+        // %museum_donations% -> total unique donations in the museum
+        if (p.equalsIgnoreCase("donations") || p.equalsIgnoreCase("donation_count")) {
+            return String.valueOf(region.getDonationCount());
+        }
+
+        Map<String, List<String>> byCat = region.getAvailableByCategory();
+        if (byCat == null || byCat.isEmpty()) return "false";
+
+        // %museum_list:<category>% -> returns comma-separated values for that category
+        if (p.startsWith("list:")) {
+            String cat = p.substring("list:".length()).trim();
+            List<String> vals = byCat.getOrDefault(cat, Collections.emptyList());
+            return vals.isEmpty() ? "" : String.join(",", vals);
+        }
+
+        // %museum_has_in:<category>:<value>% -> true/false
+        // %museum_has_in:<category>:<fossilId>:<part>% -> true/false (token fossilId@part)
+        if (p.startsWith("has_in:")) {
+            String[] parts = p.split(":", 4);
+
+            if (parts.length == 3) {
+                String category = parts[1].trim();
+                String value = parts[2].trim();
+
+                List<String> vals = byCat.get(category);
+                return String.valueOf(vals != null && vals.contains(value));
+            }
+
+            if (parts.length == 4) {
+                String category = parts[1].trim();
+                String fossilId = parts[2].trim();
+                String part = parts[3].trim();
+
+                String token = fossilId + "@" + part;
+                List<String> vals = byCat.get(category);
+                return String.valueOf(vals != null && vals.contains(token));
+            }
+
+            return "false";
+        }
+
+        // Default: caută valoarea în ORICE categorie -> true/false
         boolean presentAnywhere = byCat.values().stream()
                 .filter(Objects::nonNull)
-                .anyMatch(list -> list.contains(params));
+                .anyMatch(list -> list.contains(p));
 
         return String.valueOf(presentAnywhere);
     }
