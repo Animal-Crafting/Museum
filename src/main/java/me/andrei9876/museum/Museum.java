@@ -9,6 +9,8 @@ import me.andrei9876.museum.managers.MuseumsManager;
 import me.andrei9876.museum.managers.SchematicsManager;
 import me.andrei9876.museum.utils.PlaceholderExp;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Museum extends JavaPlugin {
@@ -16,19 +18,46 @@ public final class Museum extends JavaPlugin {
     private SchematicsManager schematicsManager;
     private MuseumsManager museumsManager;
     private MuseumsCreatures museumsCreatures;
+    private boolean fullyEnabled;
+    private BukkitTask worldWaitTask;
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         saveDefaultConfig();
 
         schematicsManager = new SchematicsManager(this);
         museumsManager = new MuseumsManager(this);
+
+        if (museumsManager.acquireWorld()) {
+            finishEnable();
+            return;
+        }
+
+        String worldName = getConfig().getString("default_world", "Museums");
+        getLogger().warning("World '" + worldName + "' is not loaded yet; waiting for it before finishing enable.");
+
+        worldWaitTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (museumsManager.acquireWorld()) {
+                    cancel();
+                    worldWaitTask = null;
+                    finishEnable();
+                }
+            }
+        }.runTaskTimer(this, 1L, 20L);
+    }
+
+    private void finishEnable() {
+        if (fullyEnabled) {
+            return;
+        }
+        fullyEnabled = true;
+
         museumsCreatures = new MuseumsCreatures(this);
         Bukkit.getPluginManager().registerEvents(new MuseumProtectionListener(this), this);
         Bukkit.getPluginManager().registerEvents(new MuseumCreationListener(this), this);
         Bukkit.getPluginManager().registerEvents(new MuseumDoorListener(this), this);
-
 
         getCommand("mymuseum").setExecutor(new MyMuseumCommand(this));
         getCommand("museumvisit").setExecutor(new MuseumVisit(this));
@@ -38,17 +67,18 @@ public final class Museum extends JavaPlugin {
         getCommand("museumpos").setExecutor(new MuseumPos(this));
         getCommand("museumfishdebug").setExecutor(new MuseumFishDebug(this));
 
-
-        if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new PlaceholderExp(this).register();
         }
-
-//        getLogger().info("Museum plugin enabled. Schematics loaded: " + schematicMap.size());
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        if (worldWaitTask != null) {
+            worldWaitTask.cancel();
+            worldWaitTask = null;
+        }
+
         if(schematicsManager != null) {
             schematicsManager.clearSchematics();
         }

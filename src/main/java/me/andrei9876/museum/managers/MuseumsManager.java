@@ -87,12 +87,6 @@ public class MuseumsManager {
         initMuseumsStorage();
         loadMuseums();
 
-        if (!getWorld()) {
-            log.severe("[Museums] World acquisition failed. Disabling plugin.");
-            plugin.getServer().getPluginManager().disablePlugin(plugin);
-            return;
-        }
-
         schematicName = plugin.getConfig().getString("schematic_name");
         distanceBetween = plugin.getConfig().getInt("distance_between", 48);
         museumCenterY = plugin.getConfig().getInt("museum_center_y", 87);
@@ -107,6 +101,18 @@ public class MuseumsManager {
                 spawnOffset.getZ(),
                 namedOffsets.size()
         );
+    }
+
+    public boolean isWorldReady() {
+        return world != null;
+    }
+
+    /** Binds the configured museum world when it becomes available (safe to call repeatedly). */
+    public boolean acquireWorld() {
+        if (world != null) {
+            return true;
+        }
+        return bindWorld();
     }
 
     private void initMuseumsStorage() {
@@ -725,7 +731,7 @@ public class MuseumsManager {
                 && minZ >= bz - half && maxZ <= bz + half;
     }
 
-    private boolean getWorld() {
+    private boolean bindWorld() {
         String worldName = plugin.getConfig().getString("default_world");
         if (worldName == null) {
             log.severe("Config worldName not found!");
@@ -733,11 +739,10 @@ public class MuseumsManager {
         }
         World w = Bukkit.getWorld(worldName);
         if (w == null) {
-            log.severe("World '" + worldName + "' is not loaded!");
             return false;
         }
         this.world = w;
-        dbg("getWorld: using world=%s", worldName);
+        dbg("bindWorld: using world=%s", worldName);
         return true;
     }
 
