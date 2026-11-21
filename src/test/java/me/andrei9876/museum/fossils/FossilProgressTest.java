@@ -37,12 +37,10 @@ class FossilProgressTest {
         assertEquals(List.of("Pteranodon2", "Trex"), values);
     }
 
-    @Test void migrationUnionsPiecesAndIsIdempotent() {
-        List<String> input = List.of("Amber", "Pteranodon2@head", "Pteranodon@head",
-                "Pteranodon@body", "Pteranodon2@tail", "Mammoth@head");
-        List<String> migrated = FossilProgress.migratePteranodon(input);
-        assertEquals(List.of("Amber", "Pteranodon@head", "Pteranodon@body", "Pteranodon@tail", "Mammoth@head", "Pteranodon"), migrated);
-        assertEquals(migrated, FossilProgress.migratePteranodon(migrated));
-        assertEquals(List.of("Pteranodon"), FossilProgress.migratePteranodon(List.of("Pteranodon2")));
+    @Test void aliasPiecesCombineWithoutRewritingTokens() {
+        List<String> values = new ArrayList<>(List.of("Amber", "Pteranodon2@head", "Pteranodon@body", "Pteranodon2@tail"));
+        List<String> before = List.copyOf(values);
+        assertTrue(FossilProgress.completed(values, "Pteranodon"));
+        assertEquals(before, values);
     }
 }

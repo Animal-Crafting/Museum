@@ -135,8 +135,6 @@ public class MuseumsCreatures {
                     return false;
                 }
 
-                List<String> before = region.getValue(CAT_FOSSILS) == null ? List.of()
-                        : new ArrayList<>(region.getValue(CAT_FOSSILS));
                 if (!FossilDonations.donate(region, creatureId, part)) {
                     debug("Piece already donated or invalid: " + creatureId + "@" + part);
                     return false;
@@ -148,13 +146,7 @@ public class MuseumsCreatures {
                         && !spawnFossil(region, creatureId)) {
                     region.removeValue(CAT_FOSSILS, creatureId);
                 }
-                try {
-                    plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
-                } catch (RuntimeException ex) {
-                    replaceFossils(region, before);
-                    plugin.getLogger().log(Level.SEVERE, "Donation could not be saved", ex);
-                    return false;
-                }
+                plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
                 if (staged) plugin.getFossilDisplays().refresh(region, creatureId);
                 return true;
             }
@@ -227,11 +219,8 @@ public class MuseumsCreatures {
         if (fossil != null && !fossil.getBoolean("armorStand", false)) {
             String part = creatureId.contains("@") ? normalizePart(creatureId.substring(creatureId.indexOf('@') + 1)) : null;
             if (creatureId.contains("@") && part == null) return false;
-            List<String> before = region.getValue(CAT_FOSSILS) == null ? List.of()
-                    : new ArrayList<>(region.getValue(CAT_FOSSILS));
             if (!FossilDonations.remove(region, fossilId, part)) return false;
-            try { plugin.getMuseumsManager().updateMuseumRegion(playerID, region); }
-            catch (RuntimeException ex) { replaceFossils(region, before); return false; }
+            plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
             plugin.getFossilDisplays().refresh(region, fossilId);
             return true;
         }
@@ -255,10 +244,6 @@ public class MuseumsCreatures {
         region.removeValue(val.category, val.value);
         plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
         return true;
-    }
-
-    public static void replaceFossils(MuseumRegion region, List<String> values) {
-        region.replaceValues(CAT_FOSSILS, values);
     }
 
     private static String normalizePart(String rawPart) {

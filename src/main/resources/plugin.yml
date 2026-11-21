@@ -34,8 +34,8 @@ commands:
     usage: /museumpos
     permission: museum.pos
   museumfossils:
-    description: Inspect or reconcile fossil displays, or migrate the retired Pteranodon2 ID
-    usage: /museumfossils <status player fossil|refresh player|migrate-pteranodon2>
+    description: Inspect or reconcile fossil displays
+    usage: /museumfossils <status player fossil|refresh player>
     permission: museum.fossils
   museumfishdebug:
     description: Respawn only Fish mobs for a specific player's museum

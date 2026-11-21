@@ -21,14 +21,4 @@ public final class FossilProgress {
         return parts(values, fossil).size() == PARTS.size();
     }
 
-    /** Returns a copy; callers explicitly decide when to persist the alias migration. */
-    public static List<String> migratePteranodon(Collection<String> values) {
-        LinkedHashSet<String> result = new LinkedHashSet<>();
-        for (String value : values) {
-            result.add(value.equals("Pteranodon2") ? "Pteranodon"
-                    : value.startsWith("Pteranodon2@") ? "Pteranodon" + value.substring(11) : value);
-        }
-        if (completed(result, "Pteranodon")) result.add("Pteranodon");
-        return new ArrayList<>(result);
-    }
 }
