@@ -1,0 +1,17 @@
+museums:
+  11111111-1111-1111-1111-111111111111:
+    world: Museums
+    owner: 11111111-1111-1111-1111-111111111111
+    min: [-50, 60, -50]
+    max: [50, 100, 50]
+    center: [0, 80, 0]
+    spawn: [0.5, 81.0, 2.5]
+    points:
+      Fossils: [0.5, 62.0, 0.5]
+      Fish: [10.5, 80.0, 0.5]
+      Bugs: [-10.5, 80.0, 0.5]
+    categories: [Bugs, Fossils, Fish]
+    availableByCategory:
+      Bugs: [Butterfly]
+      Fossils: [Amber, Trex, Mammoth@tail, Pteranodon2@head, Pteranodon@body, Pteranodon2@tail]
+      Fish: [Salmon]
