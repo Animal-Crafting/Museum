@@ -5,7 +5,7 @@ Paper plugin for per-player museums (schematics, creatures, doors, PlaceholderAP
 ## Requirements
 
 - Paper 1.21.4+
-- Java 17+
+- Java 21+
 - FastAsyncWorldEdit / WorldEdit
 - PlaceholderAPI (optional)
 
@@ -19,11 +19,12 @@ JAR output: `target/museum-*.jar`
 
 ## Releases
 
-Push a version tag to publish a GitHub Release with the built JAR:
+Every merge to `main` auto-increments the patch version (`v1.0.0`, `v1.0.1`, …), builds with that version, and publishes a GitHub Release with the JAR.
+
+Manual release:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+# GitHub Actions → Release → Run workflow
 ```
 
 ## PlaceholderAPI
