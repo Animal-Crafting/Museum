@@ -1,6 +1,8 @@
 package me.andrei9876.museum.managers;
 
 import me.andrei9876.museum.Museum;
+import me.andrei9876.museum.fossils.FossilProgress;
+import me.andrei9876.museum.fossils.FossilDonations;
 import me.andrei9876.museum.models.MuseumRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -92,6 +94,8 @@ public class MuseumsCreatures {
         }
         debug("✔ MuseumRegion found");
 
+        if ("Pteranodon2".equals(creatureId)) creatureId = "Pteranodon";
+
         boolean isFossil = plugin.getConfig().contains("offsets.Fossils." + creatureId);
         debug("isFossil=" + isFossil);
 
@@ -131,41 +135,27 @@ public class MuseumsCreatures {
                     return false;
                 }
 
-                if (hasExact(region, CAT_FOSSILS, creatureId)) {
-                    debug("❌ Fossil already completed: " + creatureId);
+                List<String> before = region.getValue(CAT_FOSSILS) == null ? List.of()
+                        : new ArrayList<>(region.getValue(CAT_FOSSILS));
+                if (!FossilDonations.donate(region, creatureId, part)) {
+                    debug("Piece already donated or invalid: " + creatureId + "@" + part);
                     return false;
                 }
-
-                String token = fossilPieceToken(creatureId, part);
-
-                if (hasExact(region, CAT_FOSSILS, token)) {
-                    debug("❌ Piece already added: " + token);
+                boolean staged = plugin.getFossilDisplays().configured(creatureId);
+                debug("Fossil progress: " + creatureId + " parts="
+                        + FossilProgress.parts(region.getValue(CAT_FOSSILS), creatureId) + ", staged=" + staged);
+                if (!staged && FossilProgress.completed(region.getValue(CAT_FOSSILS), creatureId)
+                        && !spawnFossil(region, creatureId)) {
+                    region.removeValue(CAT_FOSSILS, creatureId);
+                }
+                try {
+                    plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
+                } catch (RuntimeException ex) {
+                    replaceFossils(region, before);
+                    plugin.getLogger().log(Level.SEVERE, "Donation could not be saved", ex);
                     return false;
                 }
-
-                region.addValue(CAT_FOSSILS, token);
-                plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
-                debug("✔ Piece saved: " + token);
-
-                boolean complete =
-                        hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "head")) &&
-                                hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "body")) &&
-                                hasExact(region, CAT_FOSSILS, fossilPieceToken(creatureId, "tail"));
-
-                if (!complete) {
-                    debug("ℹ Not complete yet, skipping spawn for " + creatureId);
-                    return true;
-                }
-
-                debug("✔ All pieces collected → spawning fossil " + creatureId);
-                if (!spawnFossil(region, creatureId)) {
-                    debug("❌ spawnFossil() returned false");
-                    return false;
-                }
-
-                region.addValue(CAT_FOSSILS, creatureId);
-                plugin.getMuseumsManager().updateMuseumRegion(playerID, region);
-                debug("✔ Fossil spawned & marked completed: " + creatureId);
+                if (staged) plugin.getFossilDisplays().refresh(region, creatureId);
                 return true;
             }
 
@@ -231,6 +221,21 @@ public class MuseumsCreatures {
         MuseumRegion region = plugin.getMuseumsManager().getMuseum(playerID);
         if (region == null) return false;
 
+        String fossilId = creatureId.contains("@") ? creatureId.substring(0, creatureId.indexOf('@')) : creatureId;
+        if ("Pteranodon2".equals(fossilId)) fossilId = "Pteranodon";
+        ConfigurationSection fossil = plugin.getConfig().getConfigurationSection("offsets.Fossils." + fossilId);
+        if (fossil != null && !fossil.getBoolean("armorStand", false)) {
+            String part = creatureId.contains("@") ? normalizePart(creatureId.substring(creatureId.indexOf('@') + 1)) : null;
+            if (creatureId.contains("@") && part == null) return false;
+            List<String> before = region.getValue(CAT_FOSSILS) == null ? List.of()
+                    : new ArrayList<>(region.getValue(CAT_FOSSILS));
+            if (!FossilDonations.remove(region, fossilId, part)) return false;
+            try { plugin.getMuseumsManager().updateMuseumRegion(playerID, region); }
+            catch (RuntimeException ex) { replaceFossils(region, before); return false; }
+            plugin.getFossilDisplays().refresh(region, fossilId);
+            return true;
+        }
+
         boolean exists = false;
         for (List<String> list : region.getAvailableByCategory().values()) {
             for (String s : list) {
@@ -252,16 +257,16 @@ public class MuseumsCreatures {
         return true;
     }
 
+    public static void replaceFossils(MuseumRegion region, List<String> values) {
+        region.replaceValues(CAT_FOSSILS, values);
+    }
+
     private static String normalizePart(String rawPart) {
         if (rawPart == null) return null;
         String p = rawPart.trim().toLowerCase(Locale.ROOT);
         if (p.endsWith(";")) p = p.substring(0, p.length() - 1).trim();
         if (p.isEmpty()) return null;
         return MULTIPART_PARTS.contains(p) ? p : null;
-    }
-
-    private static String fossilPieceToken(String fossilId, String part) {
-        return fossilId + "@" + part;
     }
 
     private static boolean hasExact(MuseumRegion region, String category, String value) {

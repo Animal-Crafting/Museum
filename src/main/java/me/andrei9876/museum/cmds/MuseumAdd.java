@@ -48,6 +48,12 @@ public class MuseumAdd implements CommandExecutor {
         boolean result = plugin.getMuseumsCreatures().addCreature(id, args[1], part);
         if(!result){
             sender.sendMessage(ChatColor.RED + "A problem has been found in trying to add a creature!");
+            if (plugin.getConfig().contains("offsets.Fossils." + args[1]))
+                sender.sendMessage("Use /museumfossils status " + args[0] + " " + args[1] + " to inspect saved pieces and rendering.");
+        } else {
+            sender.sendMessage(ChatColor.GREEN + "Museum donation saved.");
+            if (plugin.getConfig().contains("offsets.Fossils." + args[1]))
+                sender.sendMessage("Rendering status: /museumfossils status " + args[0] + " " + args[1]);
         }
 
         return true;

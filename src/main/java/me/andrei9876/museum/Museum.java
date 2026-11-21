@@ -7,6 +7,7 @@ import me.andrei9876.museum.listeners.MuseumProtectionListener;
 import me.andrei9876.museum.managers.MuseumsCreatures;
 import me.andrei9876.museum.managers.MuseumsManager;
 import me.andrei9876.museum.managers.SchematicsManager;
+import me.andrei9876.museum.fossils.FossilDisplays;
 import me.andrei9876.museum.utils.PlaceholderExp;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -18,6 +19,7 @@ public final class Museum extends JavaPlugin {
     private SchematicsManager schematicsManager;
     private MuseumsManager museumsManager;
     private MuseumsCreatures museumsCreatures;
+    private FossilDisplays fossilDisplays;
     private boolean fullyEnabled;
     private BukkitTask worldWaitTask;
 
@@ -54,6 +56,7 @@ public final class Museum extends JavaPlugin {
         }
         fullyEnabled = true;
 
+        fossilDisplays = new FossilDisplays(this);
         museumsCreatures = new MuseumsCreatures(this);
         Bukkit.getPluginManager().registerEvents(new MuseumProtectionListener(this), this);
         Bukkit.getPluginManager().registerEvents(new MuseumCreationListener(this), this);
@@ -65,6 +68,7 @@ public final class Museum extends JavaPlugin {
         getCommand("museumrem").setExecutor(new MuseumRem(this));
         getCommand("museumdebug").setExecutor(new DebugMuseum(this));
         getCommand("museumpos").setExecutor(new MuseumPos(this));
+        getCommand("museumfossils").setExecutor(new MuseumFossils(this));
         getCommand("museumfishdebug").setExecutor(new MuseumFishDebug(this));
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -78,6 +82,8 @@ public final class Museum extends JavaPlugin {
             worldWaitTask.cancel();
             worldWaitTask = null;
         }
+
+        if (fossilDisplays != null) fossilDisplays.close();
 
         if(schematicsManager != null) {
             schematicsManager.clearSchematics();
@@ -98,6 +104,8 @@ public final class Museum extends JavaPlugin {
     public MuseumsManager getMuseumsManager() {
         return museumsManager;
     }
+
+    public FossilDisplays getFossilDisplays() { return fossilDisplays; }
 
     public MuseumsCreatures getMuseumsCreatures() {
         return museumsCreatures;

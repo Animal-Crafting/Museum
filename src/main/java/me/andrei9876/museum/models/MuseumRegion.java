@@ -181,6 +181,17 @@ public class MuseumRegion {
         }
     }
 
+    /** Replace one category without reordering it or touching any other donation records. */
+    public void replaceValues(String category, Collection<String> values) {
+        if (values.isEmpty()) {
+            availableByCategory.remove(category);
+            categories.remove(category);
+        } else {
+            categories.add(category);
+            availableByCategory.put(category, new ArrayList<>(new LinkedHashSet<>(values)));
+        }
+    }
+
     /** Get values for a category (read-only list). Returns null if category missing. */
     public List<String> getValue(String category) {
         List<String> list = availableByCategory.get(category);

@@ -6,34 +6,96 @@ debug: true
 
 creatures:
   Bugs:
-    - AnimalBugAntBlackArcher
+  - AnimalBugLadyBug
+  - AnimalBugStagBeetle
+  - AnimalBugTorchbug
+  - AnimalBugFly
+  - AnimalBugDragonFly
+  - AnimalBugMosquito
+  - AnimalBugHoneyBee
+  - AnimalBugWasp
+  - AnimalBugCaterpillar
+  - AnimalBugButterflyGreen
+  - AnimalBugButterflyWhite
+  - AnimalBugButterflyBlue
+  - AnimalBugButterflyPeacock
+  - AnimalBugButterflyHimalayanBlueDuke
+  - AnimalBugMothIo
+  - AnimalBugMothCoffeeClearwing
+  - AnimalBugMothFourOClock
+  - AnimalBugMothCinnabar
+  - AnimalBugMothHolyGrailMoth
+  - AnimalBugDungBeetle
+  - AnimalBugSnailRegular
+  - AnimalBugMantis
+  - AnimalBugGrasshopper
+  - AnimalBugMiniScorpion
+  - AnimalBugCentipedeCommon
+  - AnimalBugCentipede
+  - AnimalBugSpiderBlack
+  - AnimalBugSpiderStriped
+  - AnimalBugSpiderBrown
+  - AnimalBugTermiteWarrior
+  - AnimalBugTermiteWorker
+  - AnimalBugTermiteQueen
+  - AnimalBugAntBlackWarrior
+  - AnimalBugAntBlackWorker
+  - AnimalBugAntBlackQueen
+  - AnimalBugAntRedWarrior
+  - AnimalBugAntRedWorker
+  - AnimalBugAntRedQueen
   Fish:
-    - AnimalWaterSunfish
+  - AnimalWaterAnchoviesLeader
+  - AnimalWaterSunfish
+  - AnimalWaterFlyingFish
+  - AnimalWaterBatRay
+  - AnimalWaterSardinesLeader
+  - AnimalWaterRoosterFish
+  - AnimalWaterTuna
+  - AnimalWaterHermitCrab
+  - AnimalWaterFiddlerCrab
+  - AnimalWaterDogFish
+  - AnimalWaterGreenSeaTurtle
+  - AnimalWaterMahiMahi
+  - AnimalWaterPacificNettleJellyfish
+  - AnimalWaterSeahorse
+  - AnimalWaterSailfish
+  - AnimalWaterLionFish
+  - AnimalWaterAnglerfish
+  - AnimalWaterMoonJellyFishStage1
+  - AnimalWaterBlueDragon
+  - AnimalWaterNautilus
+  - AnimalWaterHalitrephe
+  - AnimalWaterKingCrab
 
 
 # Spawn offset applied to each museum CENTER to produce a consistent player spawn.
 # Example below yields: center (-23999116, -41, 7129248) -> spawn (-23999125.531, -55.9375, 7129287.519)
 offsets:
   player_spawn:
-    x: -9.531
-    y: -14.9375
-    z: 39.519
+    x: -7.0
+    y: -12.94
+    z: 37.5
     commands: {}
 
   Bugs:
-    x: -77
-    y: -22
-    z: -12
+    x: -51.5
+    y: -14
+    z: -3.5
     commands: {}
 
   Fish:
-    x: 79
-    y: -20
-    z: -18
+    x: 37
+    y: -12
+    z: -2
     commands: {}
 
   Fossils:
     Diplodocus:
+      staged: true
+      mob: Diplodocus
+      model: diplodocus
+      yaw: 0
       x: -6.5
       y: -18.0
       z: 14.5
@@ -42,6 +104,10 @@ offsets:
         - "mm m spawn Diplodocus 1 %world%,%x%,%y%,%z%"
 
     Trex:
+      staged: true
+      mob: Trex
+      model: trex
+      yaw: 0
       x: -6.5
       y: -17.0
       z: -5.5
@@ -50,6 +116,10 @@ offsets:
         - "mm m spawn Trex 1 %world%,%x%,%y%,%z%"
 
     Brachiosaurus:
+      staged: true
+      mob: Brachiosaurus
+      model: brachiosaurus
+      yaw: 0
       x: -6.5
       y: -17.0
       z: -22.5
@@ -58,6 +128,10 @@ offsets:
         - "mm m spawn Brachiosaurus 1 %world%,%x%,%y%,%z%"
 
     Triceratops:
+      staged: true
+      mob: Triceratops
+      model: triceratops
+      yaw: 0
       x: -29.5
       y: -18.0
       z: 19.5
@@ -66,6 +140,10 @@ offsets:
         - "mm m spawn Triceratops 1 %world%,%x%,%y%,%z%"
 
     Mammoth:
+      staged: true
+      mob: Mammoth
+      model: mammoth
+      yaw: 0
       x: 16.5
       y: -18.0
       z: 19.5
@@ -74,52 +152,196 @@ offsets:
         - "mm m spawn Mammoth 1 %world%,%x%,%y%,%z%"
 
     SabertoothTiger:
+      staged: true
+      mob: SabertoothTiger
+      model: sabertoothtiger
+      yaw: 90
       x: 6.5
       y: -19.0
       z: 20.0
       armorStand: false
       commands:
-        - "mm m spawn SabertoothTiger 1 %world%,%x%,%y%,%z%"
+        - "mm m spawn SabertoothTiger 1 %world%,%x%,%y%,%z%,90"
 
     Ankylosaurus:
+      staged: true
+      mob: Ankylosaurus
+      model: ankylosaurus
+      yaw: -90
       x: -19.5
       y: -19.0
       z: 20.0
       armorStand: false
       commands:
-        - "mm m spawn Ankylosaurus 1 %world%,%x%,%y%,%z%"
+        - "mm m spawn Ankylosaurus 1 %world%,%x%,%y%,%z%,-90"
 
     Megaloceros:
+      staged: true
+      mob: Megaloceros
+      model: megaloceros
+      yaw: -90
       x: -19.5
       y: -19.0
       z: 11.0
       armorStand: false
       commands:
-        - "mm m spawn Megaloceros 1 %world%,%x%,%y%,%z%"
+        - "mm m spawn Megaloceros 1 %world%,%x%,%y%,%z%,-90"
 
     Pteranodon:
+      staged: true
+      mob: Pteranodon
+      model: pteranodon
+      yaw: 0
       x: 6.5
       y: -19.0
       z: 11.0
       armorStand: false
       commands:
-        - "mm m spawn Pteranodon 1 %world%,%x%,%y%,%z%"
+        - "mm m spawn Pteranodon 1 %world%,%x%,%y%,%z%,0"
 
-    Stegasaurus:
+    Archelon:
+      staged: true
+      mob: Archelon
+      model: archelon
+      yaw: -90
       x: -19.5
       y: -19.0
       z: -10.0
+      armorStand: false
+      commands:
+        - "mm m spawn Archelon 1 %world%,%x%,%y%,%z%,-90"
+
+    Stegasaurus:
+      staged: true
+      mob: Stegasaurus
+      model: stegasaurus
+      yaw: 0
+      x: -29.5
+      y: -18.0
+      z: 0.5
       armorStand: false
       commands:
         - "mm m spawn Stegasaurus 1 %world%,%x%,%y%,%z%"
 
-    Pteranodon2:
+    Deinonychus:
+      staged: true
+      mob: Deinonychus
+      model: deinonychus
+      yaw: 90
       x: 6.5
       y: -19.0
       z: -10.0
       armorStand: false
       commands:
-        - "mm m spawn Pteranodon2 1 %world%,%x%,%y%,%z%"
+        - "mm m spawn Deinonychus 1 %world%,%x%,%y%,%z%,90"
+
+    Iguanodon:
+      staged: true
+      mob: Iguanodon
+      model: iguanodon
+      yaw: 90
+      x: 6.5
+      y: -19.0
+      z: -19.0
+      armorStand: false
+      commands:
+        - "mm m spawn Iguanodon 1 %world%,%x%,%y%,%z%,90"
+
+    Parasaurolophus:
+      staged: true
+      mob: Parasaurolophus
+      model: parasaurolophus
+      yaw: 90
+      x: 6.5
+      y: -19.0
+      z: -28.0
+      armorStand: false
+      commands:
+        - "mm m spawn Parasaurolophus 1 %world%,%x%,%y%,%z%,90"
+
+    Quetzalcoatlus:
+      staged: true
+      mob: Quetzalcoatlus
+      model: quetzalcoatlus
+      yaw: 90
+      x: 3.5
+      y: -18.0
+      z: -42.5
+      armorStand: false
+      commands:
+        - "mm m spawn Quetzalcoatlus 1 %world%,%x%,%y%,%z%,90"
+
+    Opthalmosaurus:
+      staged: true
+      mob: Opthalmosaurus
+      model: opthalmosaurus
+      yaw: 90
+      x: -16.5
+      y: -18.0
+      z: -42.5
+      armorStand: false
+      commands:
+        - "mm m spawn Opthalmosaurus 1 %world%,%x%,%y%,%z%,90"
+
+    Plesiosaurus:
+      staged: true
+      mob: Plesiosaurus
+      model: plesiosaurus
+      yaw: 0
+      x: 16.5
+      y: -18.0
+      z: 0.5
+      armorStand: false
+      commands:
+        - "mm m spawn Plesiosaurus 1 %world%,%x%,%y%,%z%"
+
+    Megacerops:
+      staged: true
+      mob: Megacerops
+      model: megacerops
+      yaw: 0
+      x: 16.5
+      y: -18.0
+      z: -18.5
+      armorStand: false
+      commands:
+        - "mm m spawn Megacerops 1 %world%,%x%,%y%,%z%"
+
+    Pachycephalosaurus:
+      staged: true
+      mob: Pachycephalosaurus
+      model: pachycephalosaurus
+      yaw: -90
+      x: -19.5
+      y: -19.0
+      z: -28.0
+      armorStand: false
+      commands:
+        - "mm m spawn Pachycephalosaurus 1 %world%,%x%,%y%,%z%,-90"
+
+    Dimetrodon:
+      staged: true
+      mob: Dimetrodon
+      model: dimetrodon
+      yaw: -90
+      x: -19.5
+      y: -19.0
+      z: -19.0
+      armorStand: false
+      commands:
+        - "mm m spawn Dimetrodon 1 %world%,%x%,%y%,%z%,-90"
+
+    Spinosaurus:
+      staged: true
+      mob: Spinosaurus
+      model: spinosaurus
+      yaw: 0
+      x: -29.5
+      y: -18.0
+      z: -18.5
+      armorStand: false
+      commands:
+        - "mm m spawn Spinosaurus 1 %world%,%x%,%y%,%z%"
 
     Archaeopteryx:
       x: 4.5
@@ -141,53 +363,456 @@ offsets:
       item: paper
       custommodeldata: 10926
 
+    Amber:
+      x: 4.5
+      y: -20.0
+      z: 15.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10852
+
+    Australopithecus:
+      x: -17.5
+      y: -20.0
+      z: 15.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10897
+
+    Dunkleosteus:
+      x: 4.5
+      y: -20.0
+      z: 6.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10914
+
+    Ammonite:
+      x: -17.5
+      y: -20.0
+      z: 6.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10853
+
+    DinosaurTrack:
+      x: 4.5
+      y: -20.0
+      z: -5.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10918
+
+    DinosaurEgg:
+      x: -17.5
+      y: -20.0
+      z: -5.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10934
+
+    FernFossil:
+      x: 4.5
+      y: -20.0
+      z: -14.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10919
+
+    SharkTooth:
+      x: -17.5
+      y: -20.0
+      z: -14.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10920
+
+    Trilobite:
+      x: 4.5
+      y: -20.0
+      z: -23.5
+      yaw: -90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10921
+
+    PekingMan:
+      x: -17.5
+      y: -20.0
+      z: -23.5
+      yaw: 90
+      pitch: 0
+      armorStand: true
+      item: paper
+      custommodeldata: 10924
+
   NPC:
-    x: -12.485
-    y: -14.5
-    z: 36.5
+    x: -8.5
+    y: -13.0
+    z: 42.5
     commands:
       - "mm m spawn NPC_Morith 1 %world%,%x%,%y%,%z%"
 
   doors:
-    door1_enter:
-      x: 10
-      y: -20
-      z: 5
-      radius: 1.2
+    bugs_enter:
+      x: -35.5
+      y: -7
+      z: 0.5
+      radius: 1.5
       cooldown_ticks: 20
-
       teleport:
         relative_to_spawn: true
         world: "Museums"
-        x: 0
-        y: 0
-        z: 0
-        yaw: 0
+        x: -41.5
+        y: -6.94
+        z: 0.5
+        yaw: 90
         pitch: 0
-
       commands:
-        - "effect give %player% minecraft:blindness 1 1 true"
-        - "say Teleported to %world% %x% %y% %z%"
+        - "tpeffect %player%"
 
-    door1_exit:
-      x: 12
-      y: -20
-      z: 5
+    bugs_exit:
+      x: -38.5
+      y: -6.94
+      z: 0.5
       radius: 1.2
       cooldown_ticks: 20
-
       teleport:
+        relative_to_spawn: true
         world: "Museums"
-        x: -23999000
-        y: -56
-        z: 7129200
-        yaw: 180
+        x: -32.5
+        y: -7.0
+        z: 0.5
+        yaw: -90
         pitch: 0
+      commands:
+        - "tpeffect %player%"
+
+    fish_enter:
+      x: 22.5
+      y: -7
+      z: 0.5
+      radius: 1.5
+      cooldown_ticks: 20
+      teleport:
+        relative_to_spawn: true
+        world: "Museums"
+        x: 36.5
+        y: -5.0
+        z: 0.5
+        yaw: -90
+        pitch: 0
+      commands:
+        - "tpeffect %player%"
+
+    fish_exit:
+      x: 26.5
+      y: -6.94
+      z: 0.5
+      radius: 1.5
+      cooldown_ticks: 20
+      teleport:
+        relative_to_spawn: true
+        world: "Museums"
+        x: 19.5
+        y: -7.0
+        z: 0.5
+        yaw: 90
+        pitch: 0
+      commands:
+        - "tpeffect %player%"
+
   holograms:
-    h1:
-      x: 0
-      y: -20
+    morith:
+      x: -8.5
+      y: -10.5
+      z: 42.5
+      lines:
+        - "&f ᴍᴏʀɪᴛʜ"
+        - "&7&f &#ffdb8eᴄʟɪᴄᴋ ᴛᴏ ᴛᴀʟᴋ"
+    fossils:
+      x: -7.0
+      y: -11.0
+      z: 34.0
+      lines:
+        - "&f"
+        - "&7Your own collection of"
+        - "&7ancient fossil exhibits"
+    terrarium:
+      x: -35.0
+      y: -5.0
+      z: 0.0
+      lines:
+        - "&f"
+        - "&7The lively place where your"
+        - "&7bug collection is on display"
+    terrarium_back:
+      x: -39.5
+      y: -5.0
+      z: 0.0
+      lines:
+        - "&7Step in and go"
+        - "&7back to the museum"
+    aquarium:
+      x: 21.0
+      y: -5.0
+      z: 0.0
+      lines:
+        - "&f"
+        - "&7A grand aquarium showcasing"
+        - "&7your entire fish collection"
+    aquarium_back:
+      x: 25.5
+      y: -5.0
+      z: 0.0
+      lines:
+        - "&7Step in and go"
+        - "&7back to the museum"
+    archaeopteryx:
+      x: 4
+      y: -17.8
+      z: 24
+      lines:
+        - "&f"
+        - "&7ᴀʀᴄʜᴀᴇᴏᴘᴛᴇʀʏx"
+    acanthostega:
+      x: -18
+      y: -17.8
+      z: 24
+      lines:
+        - "&f"
+        - "&7ᴀᴄᴀɴᴛʜᴏsᴛᴇɢᴀ"
+    amber:
+      x: 4
+      y: -17.8
+      z: 15
+      lines:
+        - "&f"
+        - "&7ᴀᴍʙᴇʀ"
+    australopithecus:
+      x: -18
+      y: -17.8
+      z: 15
+      lines:
+        - "&f"
+        - "&7ᴀᴜsᴛʀᴀʟᴏᴘɪᴛʜᴇᴄᴜs"
+    dunkleosteus:
+      x: 4
+      y: -17.8
+      z: 6
+      lines:
+        - "&f"
+        - "&7ᴅᴜɴᴋʟᴇᴏsᴛᴇᴜs"
+    ammonite:
+      x: -18
+      y: -17.8
+      z: 6
+      lines:
+        - "&f"
+        - "&7ᴀᴍᴍᴏɴɪᴛᴇ"
+    dinosaurtrack:
+      x: 4
+      y: -17.8
+      z: -6
+      lines:
+        - "&f"
+        - "&7ᴅɪɴᴏsᴀᴜʀ ᴛʀᴀᴄᴋ"
+    dinosauregg:
+      x: -18
+      y: -17.8
+      z: -6
+      lines:
+        - "&f"
+        - "&7ᴅɪɴᴏsᴀᴜʀ ᴇɢɢ"
+    fernfossil:
+      x: 4
+      y: -17.8
+      z: -15
+      lines:
+        - "&f"
+        - "&7ꜰᴇʀɴ ꜰᴏssɪʟ"
+    sharktooth:
+      x: -18
+      y: -17.8
+      z: -15
+      lines:
+        - "&f"
+        - "&7sʜᴀʀᴋ ᴛᴏᴏᴛʜ"
+    trilobite:
+      x: 4
+      y: -17.8
+      z: -24
+      lines:
+        - "&f"
+        - "&7ᴛʀɪʟᴏʙɪᴛᴇ"
+    pekingman:
+      x: -18
+      y: -17.8
+      z: -24
+      lines:
+        - "&f"
+        - "&7ᴘᴇᴋɪɴɢ ᴍᴀɴ"
+    diplodocus:
+      x: -7
+      y: -18.2
+      z: 19
+      lines:
+        - "&f"
+        - "&7ᴅɪᴘʟᴏᴅᴏᴄᴜs"
+    trex:
+      x: -7
+      y: -18.2
+      z: -1
+      lines:
+        - "&f"
+        - "&7ᴛ-ʀᴇx"
+    brachiosaurus:
+      x: -7
+      y: -18.2
+      z: -18
+      lines:
+        - "&f"
+        - "&7ʙʀᴀᴄʜɪᴏsᴀᴜʀᴜs"
+    triceratops:
+      x: -27
+      y: -18.2
+      z: 19
+      lines:
+        - "&f"
+        - "&7ᴛʀɪᴄᴇʀᴀᴛᴏᴘs"
+    mammoth:
+      x: 13
+      y: -18.2
+      z: 19
+      lines:
+        - "&f"
+        - "&7ᴍᴀᴍᴍᴏᴛʜ"
+    sabertootthtiger:
+      x: 3.0
+      y: -19.1
+      z: 19.5
+      lines:
+        - "&f"
+        - "&7sᴀʙᴇʀᴛᴏᴏᴛʜ ᴛɪɢᴇʀ"
+    ankylosaurus:
+      x: -17
+      y: -19.1
+      z: 19.5
+      lines:
+        - "&f"
+        - "&7ᴀɴᴋʏʟᴏsᴀᴜʀᴜs"
+    megaloceros:
+      x: -17
+      y: -19.1
+      z: 10.5
+      lines:
+        - "&f"
+        - "&7ᴍᴇɢᴀʟᴏᴄᴇʀᴏs"
+    pteranodon:
+      x: 3
+      y: -19.1
+      z: 10.5
+      lines:
+        - "&f"
+        - "&7ᴘᴛᴇʀᴀɴᴏᴅᴏɴ"
+    archelon:
+      x: -17
+      y: -19.1
+      z: -10.5
+      lines:
+        - "&f"
+        - "&7ᴀʀᴄʜᴇʟᴏɴ"
+    stegasaurus:
+      x: -27
+      y: -18.2
       z: 0
       lines:
-        - "&aBugs Museum"
-        - "&7Click to open"
+        - "&f"
+        - "&7ꜱᴛᴇɢᴀꜱᴀᴜʀᴜꜱ"
+    deinonychus:
+      x: 3
+      y: -19.1
+      z: -10.5
+      lines:
+        - "&f"
+        - "&7ᴅᴇɪɴᴏɴʏᴄʜᴜꜱ"
+    iguanodon:
+      x: 3
+      y: -19.1
+      z: -19.5
+      lines:
+        - "&f"
+        - "&7ɪɢᴜᴀɴᴏᴅᴏɴ"
+    parasaurolophus:
+      x: 3
+      y: -19.1
+      z: -28.5
+      lines:
+        - "&f"
+        - "&7ᴘᴀʀᴀꜱᴀᴜʀᴏʟᴏᴘʜᴜꜱ"
+    dimetrodon:
+      x: -17
+      y: -19.1
+      z: -19.5
+      lines:
+        - "&f"
+        - "&7ᴅɪᴍᴇᴛʀᴏᴅᴏɴ"
+    pachycephalosaurus:
+      x: -17
+      y: -19.1
+      z: -28.5
+      lines:
+        - "&f"
+        - "&7ᴘᴀᴄʜʏᴄᴇᴘʜᴀʟᴏꜱᴀᴜʀᴜꜱ"
+    plesiosaurus:
+      x: 13
+      y: -18.2
+      z: 0
+      lines:
+        - "&f"
+        - "&7ᴘʟᴇꜱɪᴏꜱᴀᴜʀᴜꜱ"
+    megacerops:
+      x: 13
+      y: -18.2
+      z: -19
+      lines:
+        - "&f"
+        - "&7ᴍᴇɢᴀᴄᴇʀᴏᴘꜱ"
+    spinosaurus:
+      x: -27
+      y: -18.2
+      z: -19
+      lines:
+        - "&f"
+        - "&7ꜱᴘɪɴᴏꜱᴀᴜʀᴜꜱ"
+    opthalmosaurus:
+      x: -17
+      y: -18.2
+      z: -40
+      lines:
+        - "&f"
+        - "&7ᴏᴘᴛʜᴀʟᴍᴏꜱᴀᴜʀᴜꜱ"
+    quetzalcoatlus:
+      x: 3
+      y: -18.2
+      z: -40
+      lines:
+        - "&f"
+        - "&7qᴜᴇᴛᴢᴀʟᴄᴏᴀᴛʟᴜꜱ"

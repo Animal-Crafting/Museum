@@ -51,7 +51,7 @@ jobs:
           echo "Next version: v${NEXT} (previous: ${LATEST:-none})"
 
       - name: Build with release version
-        run: mvn -B -DskipTests -Drevision=${{ steps.version.outputs.version }} package
+        run: mvn -B -Drevision=${{ steps.version.outputs.version }} verify
 
       - name: Resolve JAR
         id: jar

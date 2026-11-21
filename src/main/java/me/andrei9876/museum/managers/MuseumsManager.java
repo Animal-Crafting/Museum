@@ -11,12 +11,13 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import me.andrei9876.museum.Museum;
 import me.andrei9876.museum.models.MuseumRegion;
 import me.andrei9876.museum.utils.HologramUtil;
+import me.andrei9876.museum.storage.MuseumRecordStore;
+import me.andrei9876.museum.storage.MuseumRegionCodec;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.util.Vector;
 
@@ -47,7 +48,8 @@ public class MuseumsManager {
     private final Map<String, DoorSpec> doors = new LinkedHashMap<>();
 
     private File museumsFile;
-    private FileConfiguration museumsConfig;
+    private YamlConfiguration museumsConfig;
+    private final MuseumRecordStore recordStore = new MuseumRecordStore();
 
     /**
      * @param offset   relative to museum center
@@ -125,18 +127,17 @@ public class MuseumsManager {
             plugin.saveResource("museums.yml", false);
         }
 
-        this.museumsConfig = YamlConfiguration.loadConfiguration(museumsFile);
-        if (museumsConfig.getConfigurationSection("museums") == null) {
-            museumsConfig.createSection("museums");
-            saveMuseumsConfig();
-        }
-    }
-
-    private void saveMuseumsConfig() {
+        this.museumsConfig = new YamlConfiguration();
         try {
-            museumsConfig.save(museumsFile);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "[Museums] Failed to save museums.yml", e);
+            museumsConfig.load(museumsFile);
+        } catch (IOException | org.bukkit.configuration.InvalidConfigurationException ex) {
+            throw new IllegalStateException("Refusing to load or overwrite unreadable museums.yml", ex);
+        }
+        if (museumsConfig.getConfigurationSection("museums") == null) {
+            if (museumsConfig.contains("museums")) {
+                throw new IllegalStateException("Refusing to replace malformed 'museums' root in museums.yml");
+            }
+            museumsConfig.createSection("museums");
         }
     }
 
@@ -474,49 +475,11 @@ public class MuseumsManager {
     /* ==================== STORAGE ==================== */
 
     public void saveMuseums() {
-        dbg("saveMuseums: saving %d entries...", museums.size());
-
-        museumsConfig.set("museums", null);
-        ConfigurationSection root = museumsConfig.createSection("museums");
-
-        for (Map.Entry<UUID, MuseumRegion> e : museums.entrySet()) {
-            String key = e.getKey().toString();
-            MuseumRegion r = e.getValue();
-
-            ConfigurationSection sec = root.createSection(key);
-            sec.set("world", r.getWorldName());
-            sec.set("owner", r.getOwner().toString());
-            sec.set("min", Arrays.asList(r.getMin().x(), r.getMin().y(), r.getMin().z()));
-            sec.set("max", Arrays.asList(r.getMax().x(), r.getMax().y(), r.getMax().z()));
-            sec.set("center", Arrays.asList(r.getCenter().x(), r.getCenter().y(), r.getCenter().z()));
-            sec.set("spawn", Arrays.asList(
-                    r.getSpawn().getX(),
-                    r.getSpawn().getY(),
-                    r.getSpawn().getZ()
-            ));
-
-            if (!r.getPoints().isEmpty()) {
-                ConfigurationSection pts = sec.createSection("points");
-                for (Map.Entry<String, Vector> p : r.getPoints().entrySet()) {
-                    Vector v = p.getValue();
-                    pts.set(p.getKey(), Arrays.asList(v.getX(), v.getY(), v.getZ()));
-                }
-            }
-
-            if (!r.getCategories().isEmpty()) {
-                sec.set("categories", new ArrayList<>(r.getCategories()));
-            }
-
-            if (!r.getAvailableByCategory().isEmpty()) {
-                ConfigurationSection av = sec.createSection("availableByCategory");
-                for (Map.Entry<String, List<String>> entry : r.getAvailableByCategory().entrySet()) {
-                    av.set(entry.getKey(), new ArrayList<>(entry.getValue()));
-                }
-            }
+        try {
+            recordStore.save(museumsConfig, museums, museumsFile.toPath());
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to save museum changes; previous data file preserved", ex);
         }
-
-        saveMuseumsConfig();
-        dbg("saveMuseums: done.");
     }
 
     @SuppressWarnings("unchecked")
@@ -541,106 +504,17 @@ public class MuseumsManager {
 
             try {
                 UUID id = UUID.fromString(key);
-                String world = sec.getString("world", "world");
-                String ownerStr = sec.getString("owner", key);
-                UUID owner = UUID.fromString(ownerStr);
-
-                List<Number> minL = (List<Number>) sec.getList("min");
-                List<Number> maxL = (List<Number>) sec.getList("max");
-                List<Number> cenL = (List<Number>) sec.getList("center");
-                List<Number> spL = (List<Number>) sec.getList("spawn");
-
-                if (minL == null || maxL == null || cenL == null) {
-                    dbg("loadMuseums: skip %s (missing vectors)", key);
-                    continue;
-                }
-
-                BlockVector3 min = BlockVector3.at(minL.get(0).intValue(), minL.get(1).intValue(), minL.get(2).intValue());
-                BlockVector3 max = BlockVector3.at(maxL.get(0).intValue(), maxL.get(1).intValue(), maxL.get(2).intValue());
-                BlockVector3 center = BlockVector3.at(cenL.get(0).intValue(), cenL.get(1).intValue(), cenL.get(2).intValue());
-
-                Vector spawn;
-                if (spL != null && spL.size() >= 3) {
-                    spawn = new Vector(spL.get(0).doubleValue(), spL.get(1).doubleValue(), spL.get(2).doubleValue());
-                } else {
-                    spawn = new Vector(
-                            center.x() + 0.5 + spawnOffset.getX(),
-                            center.y() + spawnOffset.getY(),
-                            center.z() + 0.5 + spawnOffset.getZ()
-                    );
-                }
-
-                // points (absolute)
-                Map<String, Vector> points = new LinkedHashMap<>();
-                ConfigurationSection pts = sec.getConfigurationSection("points");
-                if (pts != null) {
-                    for (String pkey : pts.getKeys(false)) {
-                        List<Number> v = (List<Number>) pts.getList(pkey);
-                        if (v != null && v.size() >= 3) {
-                            points.put(pkey, new Vector(v.get(0).doubleValue(), v.get(1).doubleValue(), v.get(2).doubleValue()));
-                        }
-                    }
-                }
-
-                // If old museum has no points saved, rebuild from current config offsets
-                if (points.isEmpty() && !namedOffsets.isEmpty()) {
-                    double baseX = center.x() + 0.5;
-                    double baseY = center.y();
-                    double baseZ = center.z() + 0.5;
-
+                MuseumRegion r = MuseumRegionCodec.read(sec, id, spawnOffset, center -> {
+                    Map<String, Vector> fallback = new LinkedHashMap<>();
                     for (OffsetSpec spec : namedOffsets.values()) {
-                        points.put(spec.key, new Vector(
-                                baseX + spec.offset.getX(),
-                                baseY + spec.offset.getY(),
-                                baseZ + spec.offset.getZ()
-                        ));
+                        fallback.put(spec.key, new Vector(center.x() + 0.5 + spec.offset.getX(),
+                                center.y() + spec.offset.getY(), center.z() + 0.5 + spec.offset.getZ()));
                     }
-
-                    dbg("loadMuseums: rebuilt %d points for %s from offsets config", points.size(), key);
-                }
-
-                // categories (ordered, trimmed, deduped)
-                LinkedHashSet<String> categories = new LinkedHashSet<>();
-                for (String c : sec.getStringList("categories")) {
-                    if (c == null) continue;
-                    String t = c.trim();
-                    if (!t.isEmpty()) categories.add(t);
-                }
-
-                // availableByCategory (map: category -> ordered, trimmed, deduped values)
-                LinkedHashMap<String, List<String>> availableByCategory = new LinkedHashMap<>();
-                ConfigurationSection av = sec.getConfigurationSection("availableByCategory");
-                if (av != null) {
-                    for (String cat : av.getKeys(false)) {
-                        if (cat == null) continue;
-                        String cleanCat = cat.trim();
-                        if (cleanCat.isEmpty()) continue;
-
-                        LinkedHashSet<String> vals = new LinkedHashSet<>();
-                        for (String v : av.getStringList(cat)) {
-                            if (v == null) continue;
-                            String tv = v.trim();
-                            if (!tv.isEmpty()) vals.add(tv);
-                        }
-                        availableByCategory.put(cleanCat, new ArrayList<>(vals));
-                    }
-                }
-
-                // Back-compat glue:
-                // - if categories are missing but availableByCategory has entries, derive categories from its keys
-                if (categories.isEmpty() && !availableByCategory.isEmpty()) {
-                    categories.addAll(availableByCategory.keySet());
-                }
-                // - if categories contain keys not present in availableByCategory, ensure they exist with empty lists
-                for (String c : categories) {
-                    availableByCategory.computeIfAbsent(c, k -> new ArrayList<>());
-                }
-
-                MuseumRegion r = new MuseumRegion(
-                        owner, world, min, max, center, spawn, points, categories, availableByCategory
-                );
+                    return fallback;
+                });
 
                 museums.put(id, r);
+                recordStore.remember(id, r);
                 ok++;
             } catch (Exception ex) {
                 fail++;
